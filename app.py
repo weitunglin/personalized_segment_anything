@@ -8,10 +8,10 @@ import torch.nn as nn
 import gradio as gr
 import numpy as np
 from torch.nn import functional as F
+import cv2
 
 from show import *
 from per_segment_anything import sam_model_registry, SamPredictor
-
 
 class ImageMask(gr.components.Image):
     """
@@ -125,6 +125,7 @@ def inference(ic_image, ic_mask, image1, image2):
     target_embedding = target_embedding.unsqueeze(0)
     
     output_image = []
+    count = 0
     
     for test_image in [image1, image2]:
         print("======> Testing Image" )
@@ -193,6 +194,11 @@ def inference(ic_image, ic_mask, image1, image2):
         final_mask = masks[best_idx]
         mask_colors = np.zeros((final_mask.shape[0], final_mask.shape[1], 3), dtype=np.uint8)
         mask_colors[final_mask, :] = np.array([[128, 0, 0]])
+
+        rgb_mask_colors = cv2.cvtColor(mask_colors, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f'image_mask{count}.png', rgb_mask_colors)
+        count = count + 1
+
         output_image.append(Image.fromarray((mask_colors * 0.6 + test_image * 0.4).astype('uint8'), 'RGB'))
     
     return output_image[0].resize((224, 224)), output_image[1].resize((224, 224))
@@ -350,7 +356,7 @@ def inference_finetune(ic_image, ic_mask, image1, image2):
     mask_weights = Mask_Weights().cuda()
     # mask_weights = Mask_Weights()
     mask_weights.train()
-    train_epoch = 1000
+    train_epoch = 2000
     optimizer = torch.optim.AdamW(mask_weights.parameters(), lr=1e-3, eps=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, train_epoch)
 
@@ -394,9 +400,6 @@ def inference_finetune(ic_image, ic_mask, image1, image2):
         test_image = np.array(test_image.convert("RGB"))
         
         # Image feature encoding
-        predictor.set_image(test_image)
-        test_feat = predictor.features.squeeze()
-         # Image feature encoding
         predictor.set_image(test_image)
         test_feat = predictor.features.squeeze()
 
@@ -470,6 +473,7 @@ def inference_finetune(ic_image, ic_mask, image1, image2):
 
 description = """
 <div style="text-align: center; font-weight: bold;">
+    <p>Final Project for NTUST EdgeAI Course by M11115116 WEI-TUNG LIN</p>
     <span style="font-size: 18px" id="paper-info">
         [<a href="https://github.com/ZrrSkywalker/Personalize-SAM" target="_blank"><font color='black'>Github</font></a>]
         [<a href="https://arxiv.org/pdf/2305.03048.pdf" target="_blank"><font color='black'>Paper</font></a>]
@@ -493,6 +497,7 @@ main = gr.Interface(
     title="Personalize Segment Anything Model with 1 Shot",
     description=description,
     examples=[
+        ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
         ["./examples/cat_00.jpg", "./examples/cat_00.png", "./examples/cat_01.jpg", "./examples/cat_02.jpg"],
         ["./examples/colorful_sneaker_00.jpg", "./examples/colorful_sneaker_00.png", "./examples/colorful_sneaker_01.jpg", "./examples/colorful_sneaker_02.jpg"],
         ["./examples/duck_toy_00.jpg", "./examples/duck_toy_00.png", "./examples/duck_toy_01.jpg", "./examples/duck_toy_02.jpg"],
@@ -514,6 +519,7 @@ main_scribble = gr.Interface(
     title="Personalize Segment Anything Model with 1 Shot",
     description=description,
     examples=[
+        ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
         ["./examples/cat_00.jpg", "./examples/cat_01.jpg", "./examples/cat_02.jpg"],
         ["./examples/colorful_sneaker_00.jpg", "./examples/colorful_sneaker_01.jpg", "./examples/colorful_sneaker_02.jpg"],
         ["./examples/duck_toy_00.jpg", "./examples/duck_toy_01.jpg", "./examples/duck_toy_02.jpg"],
@@ -533,9 +539,10 @@ main_finetune = gr.Interface(
         gr.components.Image(type="pil", label="output image2"),
     ],
     allow_flagging="never",
-    title="Personalize Segment Anything Model with 1 Shot",
+    title="Personalize Segment Anything Model with 1 Shot Finetune",
     description=description,
     examples=[
+        ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
         ["./examples/cat_00.jpg", "./examples/cat_00.png", "./examples/cat_01.jpg", "./examples/cat_02.jpg"],
         ["./examples/colorful_sneaker_00.jpg", "./examples/colorful_sneaker_00.png", "./examples/colorful_sneaker_01.jpg", "./examples/colorful_sneaker_02.jpg"],
         ["./examples/duck_toy_00.jpg", "./examples/duck_toy_00.png", "./examples/duck_toy_01.jpg", "./examples/duck_toy_02.jpg"],
@@ -547,7 +554,9 @@ demo = gr.Blocks()
 with demo:
     gr.TabbedInterface(
         [main, main_scribble, main_finetune], 
-        ["Personalize-SAM", "Personalize-SAM-Scribble", "Personalize-SAM-F"],
+        ["Personalize-SAM", "Personalize-SAM-Scribble", "Personalize-SAM-Finetune"],
     )
 
-demo.launch(share=True)
+demo.launch(share=False,
+    server_name="0.0.0.0")
+
