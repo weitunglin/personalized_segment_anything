@@ -494,7 +494,7 @@ main = gr.Interface(
         gr.outputs.Image(type="pil", label="output image2"),
     ],
     allow_flagging="never",
-    title="Personalize Segment Anything Model with 1 Shot",
+    title="Personalize Segment Anything Model with 1 Shot - Mask",
     description=description,
     examples=[
         ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
@@ -517,10 +517,10 @@ main_scribble = gr.Interface(
         gr.outputs.Image(type="pil", label="output image2"),
     ],
     allow_flagging="never",
-    title="Personalize Segment Anything Model with 1 Shot",
+    title="Personalize Segment Anything Model with 1 Shot - Scribble",
     description=description,
     examples=[
-        ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
+        ["./examples/bella_image_00.jpg", "./examples/bella_image_03.jpg", "./examples/bella_image_04.jpg"],
         ["./examples/cat_00.jpg", "./examples/cat_01.jpg", "./examples/cat_02.jpg"],
         ["./examples/colorful_sneaker_00.jpg", "./examples/colorful_sneaker_01.jpg", "./examples/colorful_sneaker_02.jpg"],
         ["./examples/duck_toy_00.jpg", "./examples/duck_toy_01.jpg", "./examples/duck_toy_02.jpg"],
@@ -540,7 +540,7 @@ main_finetune = gr.Interface(
         gr.components.Image(type="pil", label="output image2"),
     ],
     allow_flagging="never",
-    title="Personalize Segment Anything Model with 1 Shot Finetune",
+    title="Personalize Segment Anything Model with 1 Shot - Finetune",
     description=description,
     examples=[
         ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
@@ -555,7 +555,7 @@ demo = gr.Blocks()
 with demo:
     gr.TabbedInterface(
         [main, main_scribble, main_finetune], 
-        ["Personalize-SAM", "Personalize-SAM-Scribble", "Personalize-SAM-Finetune"],
+        ["Personalize-SAM-Mask", "Personalize-SAM-Scribble", "Personalize-SAM-Finetune"],
     )
 
 demo.launch(share=False,
