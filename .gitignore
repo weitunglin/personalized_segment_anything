@@ -1,4 +1,4 @@
-lation and distribution
+# lacation and distribution
 __pycache__
 _ext
 *.pyc
@@ -38,3 +38,4 @@ _darcs
 data
 work_dirs
 
+*.DS_Store

@@ -356,8 +356,8 @@ def inference_finetune(ic_image, ic_mask, image1, image2):
     mask_weights = Mask_Weights().cuda()
     # mask_weights = Mask_Weights()
     mask_weights.train()
-    train_epoch = 2000
-    optimizer = torch.optim.AdamW(mask_weights.parameters(), lr=1e-3, eps=1e-4)
+    train_epoch = 500
+    optimizer = torch.optim.AdamW(mask_weights.parameters(), lr=4e-3, eps=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, train_epoch)
 
     for train_idx in range(train_epoch):
@@ -498,6 +498,7 @@ main = gr.Interface(
     description=description,
     examples=[
         ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_01.jpg", "./examples/bella_image_02.jpg"],
+        ["./examples/bella_image_00.jpg", "./examples/bella_mask_00.png", "./examples/bella_image_03.jpg", "./examples/bella_image_04.jpg"],
         ["./examples/cat_00.jpg", "./examples/cat_00.png", "./examples/cat_01.jpg", "./examples/cat_02.jpg"],
         ["./examples/colorful_sneaker_00.jpg", "./examples/colorful_sneaker_00.png", "./examples/colorful_sneaker_01.jpg", "./examples/colorful_sneaker_02.jpg"],
         ["./examples/duck_toy_00.jpg", "./examples/duck_toy_00.png", "./examples/duck_toy_01.jpg", "./examples/duck_toy_02.jpg"],

@@ -69,8 +69,40 @@ def persam(args, obj_name, images_path, masks_path, output_path):
     print("======> Load SAM" )
     sam_type, sam_ckpt = 'vit_h', args.ckpt
     sam = sam_model_registry[sam_type](checkpoint=sam_ckpt).cuda()
+    # sam = sam_model_registry[sam_type](checkpoint=sam_ckpt)
     predictor = SamPredictor(sam)
+
     
+    print("======> SAM Perdictor" )
+    print(predictor.model)
+
+    """
+    # convert sam image_encoder to onnx
+    import warnings
+    from pathlib import Path
+    import torch
+    from openvino.tools import mo
+    from openvino.runtime import serialize, Core
+    core = Core()
+
+    ov_encoder_path = Path("/home/allen/workspace/Personalize-SAM/sam_image_encoder.xml")
+
+    if not ov_encoder_path.exists():
+        onnx_encoder_path = ov_encoder_path.with_suffix(".onnx")
+        if not onnx_encoder_path.exists():
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=torch.jit.TracerWarning)
+                warnings.filterwarnings("ignore", category=UserWarning)
+
+                print(f"onnx encoder path: {onnx_encoder_path}")
+                torch.onnx.export(sam.image_encoder, torch.zeros(1,3,1024,1024), onnx_encoder_path)
+
+        ov_encoder_model = mo.convert_model(onnx_encoder_path, compress_to_fp16=True)
+        serialize(ov_encoder_model, str(ov_encoder_path))
+    else:
+        ov_encoder_model = core.read_model(ov_encoder_path)
+    ov_encoder = core.compile_model(ov_encoder_model)
+    """
 
     print("======> Obtain Location Prior" )
     # Image features encoding
